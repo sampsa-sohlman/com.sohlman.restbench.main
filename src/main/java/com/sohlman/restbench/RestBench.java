@@ -39,6 +39,7 @@ public class RestBench extends AbstractVerticle {
 		router.get("/informations/random/:count").handler(this::getRandomData);
 		router.get("/informations/random/:count/:waitTime").handler(this::getRandomData);
 		
+		router.get("/informations/count").handler(this::getCount);
 		router.get("/informations/:count/:start").handler(this::getList);
 		router.get("/informations/:count").handler(this::getList);
 		router.get("/informations").handler(this::getList);
@@ -73,6 +74,20 @@ public class RestBench extends AbstractVerticle {
 
 	protected Information getRandomInformation() {
 		return list.get(Util.randomNumber(0, list.size() - 1));
+	}
+	
+	private void getCount(RoutingContext routingContext) {
+		vertx.setTimer(Util.randomNumber(0, this.maxTimeOut), id -> {
+			String startStr = routingContext.request().getParam("start");
+			String countStr = routingContext.request().getParam("count");
+			
+			int start = Util.getIntFromString(startStr, 0, list.size() - 1, 0);
+			int end = Util.getIntFromString(countStr, list.size() - 1, list.size() - 1);
+
+			HttpServerResponse response = routingContext.response();
+			
+			response.putHeader("content-type", "application/json; charset=utf-8").end(String.valueOf(list.size()));
+		});
 	}
 
 	private void getList(RoutingContext routingContext) {
